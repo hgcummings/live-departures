@@ -1,0 +1,16 @@
+#include <ESP8266WiFi.h>
+
+#include "network.h"
+
+char* ssid     = "MY_SSID";
+char* password = "MY_PASSWORD";
+
+// These three arguments will be passed to WiFi.config
+// See https://www.arduino.cc/en/Reference/WiFiConfig
+IPAddress client_ip(10, 0, 0, 11);
+IPAddress dns_ip(8, 8, 8, 8);
+IPAddress gateway_ip(10, 0, 0, 1);
+
+// Details of the host where server.rb is running
+IPAddress host_ip(10, 0, 0, 10);
+extern uint16_t host_port = 8080;

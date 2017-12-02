@@ -1,5 +1,3 @@
-#include <Adafruit_GFX.h>
-#include <Adafruit_LEDBackpack.h>
 #include <ESP8266WiFi.h>
 
 #include "network.h"
@@ -19,57 +17,40 @@ void setup() {
     return;
   }
 
-  Serial.println("Picking bus");
   randomSeed(analogRead(0));
   int i = random(bus_count);
-  Serial.printf("Picked bus %d\n", i);
-
-  Serial.println("Sending bus");
+  Serial.printf("Requesting arrivals for bus %d\n", buses[i].number);
   client.write(buses[i].number);
 
   int next;
-  int current_digit = 0;
+  int found = 0;
 
-  Serial.println("Drawing arrivals");
-  while(client.connected() && current_digit < 5){    
-    next = client.read(); // Time to arrival in deciseconds
+  Serial.println("Displaying arrivals");
+  while(client.connected() && can_display_arrival()){
+    next = client.read();
 
     if (next == -1) {
-      continue; // No data
+      continue; // No data received yet
     }
     
-    Serial.printf("Got arrival in %d deciseconds\n", next);
-
-    if (current_digit == 0) {
-      numeric.blinkRate(0);
-      numeric.clear();
-      matrix.clear();
-      matrix.drawBitmap(0, 0, buses[i].icon, 8, 8, LED_ON);
-      matrix.writeDisplay();
-    }
+    Serial.printf("- Arrival in %d deciseconds\n", next);
 
     int minutes = next / 6;
     if (minutes < 3) {
       continue; 
     }
 
-    int tens = minutes / 10;
-    if (tens > 0) {
-      if (current_digit > 3) {
-        break;
-      }
-
-      numeric.writeDigitNum(current_digit, tens);
-      current_digit = increment_digit(current_digit);
+    if (found == 0) {
+      display_arrivals_begin(buses[i].icon);
     }
 
-    numeric.writeDigitNum(current_digit, minutes % 10, true);
-    current_digit = increment_digit(current_digit);
+    found++;
+
+    display_arrival(minutes);
   }
-  numeric.writeDisplay();
+  display_arrivals_end();
   
-  Serial.println();
-  Serial.println("closing connection");
+  Serial.println("Done");
 }
 
 void loop() {

@@ -3,3 +3,4 @@
 
 extern Adafruit_8x8matrix matrix;
 extern Adafruit_7segment numeric;
+int increment_digit(int digit);

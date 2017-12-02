@@ -4,64 +4,14 @@
 
 #include "network.h"
 #include "display.h"
-
-typedef struct {
-  unsigned char number;
-  uint8_t icon[8];
-} service;
-
-static const uint8_t init_icon[8] PROGMEM = {
-  B00111100,
-  B01111110,
-  B01100110,
-  B11111111,
-  B11111111,
-  B01100110,
-  B01111110,
-  B00111100
-};
-
-static const service buses[] PROGMEM = {
-  { 43,
-    { B10110101,
-      B10010101,
-      B10010101,
-      B10110111,
-      B10010001,
-      B10010001,
-      B10110001,
-      B00000000
-    }
-  },
-  { 134,
-    { B10110101,
-      B10010101,
-      B10010101,
-      B10110111,
-      B10010001,
-      B10010001,
-      B10110001,
-      B00000000
-    }
-  }
-};
+#include "data.h"
 
 int bus_count = sizeof(buses) / sizeof(buses[0]);
-
-int increment_digit(int digit) {
-  if (digit == 1) {
-    return 3;
-  } else {
-    return digit + 1;
-  }
-}
 
 void setup() {
   Serial.begin(9600);
   matrix.begin(0x70);
   numeric.begin(0x74);
-  
-  matrix.clear();
   numeric.clear();
   
   matrix.drawBitmap(0, 0, init_icon, 8, 8, LED_ON);
@@ -69,10 +19,8 @@ void setup() {
   
   Serial.println();
   Serial.println();
+  Serial.printf("Connecting to %s", ssid);
   WiFi.config(client_ip, dns_ip, gateway_ip);
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  
   WiFi.begin(ssid, password);
 
   numeric.blinkRate(1);
@@ -94,10 +42,20 @@ void setup() {
     return;
   }
 
+  Serial.println("Picking bus");
+  randomSeed(analogRead(0));
+  int i = random(bus_count);
+  Serial.printf("Picked bus %d\n", i);
+
+  Serial.println("Sending bus");
+  client.write(buses[i].number);
+
   int next;
   int current_digit = 0;
   numeric.blinkRate(0);
   numeric.clear();
+
+  Serial.println("Drawing arrivals");
   while(client.connected() && current_digit < 5){    
     next = client.read(); // Time to arrival in deciseconds
 
@@ -106,6 +64,13 @@ void setup() {
     }
     
     Serial.printf("Got arrival in %d deciseconds\n", next);
+
+    if (current_digit == 0) {
+      Serial.println("Drawing icon");
+      matrix.clear();
+      matrix.drawBitmap(0, 0, buses[i].icon, 8, 8, LED_ON);
+      matrix.writeDisplay();
+    }
 
     int minutes = next / 6;
     if (minutes < 3) {

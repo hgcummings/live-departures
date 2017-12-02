@@ -1,10 +1,27 @@
+require 'json'
+require 'net/http'
 require 'socket'
 
-server = TCPServer.new '0.0.0.0', 43134 # Server bind to port 2000
+raise 'STOP_POINT environment variable not specified' unless ENV['STOP_POINT']
+
+server = TCPServer.new '0.0.0.0', ENV['PORT'] || 8080
+uri = URI("https://api.tfl.gov.uk/StopPoint/#{ENV['STOP_POINT']}/Arrivals")
 
 loop do
-  puts 'listening...'
-  client = server.accept    # Wait for a client to connect
-  client.write [20,50,70].pack("C*")
-  client.close
+    puts "Listening on port #{server.addr[1]}..."
+    client = server.accept
+    line_id = client.recv(1).ord.to_s
+
+    puts line_id
+
+    arrivals =
+        JSON.parse(Net::HTTP.get(uri))
+            .select{ |a| a['lineId'] == line_id }
+            .map{ |a| a['timeToStation'] / 10 }
+            .sort
+
+    puts arrivals.join(', ')
+
+    client.write arrivals.pack("C*")
+    client.close
 end

@@ -10,33 +10,10 @@ int bus_count = sizeof(buses) / sizeof(buses[0]);
 
 void setup() {
   Serial.begin(9600);
-  matrix.begin(0x70);
-  numeric.begin(0x74);
-  numeric.clear();
-  
-  matrix.drawBitmap(0, 0, init_icon, 8, 8, LED_ON);
-  matrix.writeDisplay();
-  
-  Serial.println();
-  Serial.println();
-  Serial.printf("Connecting to %s", ssid);
-  WiFi.config(client_ip, dns_ip, gateway_ip);
-  WiFi.begin(ssid, password);
+  display_init();
+  display_loading(loading_icon);
 
-  numeric.blinkRate(1);
-  numeric.drawColon(true);
-  numeric.writeDisplay();
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(10);
-    Serial.print(".");
-  }
- 
-  Serial.println("");
-  
-  Serial.println("WiFi connected");
-
-  WiFiClient client;
-  client.setNoDelay(true);
+  WiFiClient client = network_client();
   if (!client.connect(host_ip, host_port)) {
     Serial.println("connection failed");
     return;
@@ -52,8 +29,6 @@ void setup() {
 
   int next;
   int current_digit = 0;
-  numeric.blinkRate(0);
-  numeric.clear();
 
   Serial.println("Drawing arrivals");
   while(client.connected() && current_digit < 5){    
@@ -66,7 +41,8 @@ void setup() {
     Serial.printf("Got arrival in %d deciseconds\n", next);
 
     if (current_digit == 0) {
-      Serial.println("Drawing icon");
+      numeric.blinkRate(0);
+      numeric.clear();
       matrix.clear();
       matrix.drawBitmap(0, 0, buses[i].icon, 8, 8, LED_ON);
       matrix.writeDisplay();

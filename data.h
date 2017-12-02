@@ -3,7 +3,7 @@ typedef struct {
   uint8_t icon[8];
 } service;
 
-const uint8_t init_icon[8] = {
+const uint8_t loading_icon[8] = {
   B00111100,
   B01111110,
   B01100110,

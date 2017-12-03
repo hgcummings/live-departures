@@ -6,10 +6,10 @@ char* ssid     = "MY_SSID";
 char* password = "MY_PASSWORD";
 
 // These three arguments will be passed to WiFi.config
-// See https://www.arduino.cc/en/Reference/WiFiConfig
-IPAddress client_ip(10, 0, 0, 11);
-IPAddress dns_ip(8, 8, 8, 8);
+// See https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/ESP8266WiFiSTA.h#L42
+IPAddress local_ip(10, 0, 0, 11);
 IPAddress gateway_ip(10, 0, 0, 1);
+IPAddress subnet_mask(255, 255, 255, 0);
 
 // Details of the host where server.rb is running
 IPAddress host_ip(10, 0, 0, 10);

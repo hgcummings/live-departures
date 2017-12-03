@@ -3,10 +3,8 @@
 #include "network.h"
 
 WiFiClient network_client() {
-  Serial.println();
-  Serial.println();
   Serial.printf("Connecting to %s", ssid);
-  WiFi.config(client_ip, dns_ip, gateway_ip);
+  WiFi.config(local_ip, gateway_ip, subnet_mask);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(10);

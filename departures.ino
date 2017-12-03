@@ -8,10 +8,16 @@ int bus_count = sizeof(buses) / sizeof(buses[0]);
 
 void setup() {
   Serial.begin(9600);
+  Serial.println();
+  Serial.println();
   display_init();
   display_loading(loading_icon);
 
   WiFiClient client = network_client();
+
+  Serial.print("Connecting to ");
+  Serial.print(host_ip);
+  Serial.printf(":%d\n", host_port);
   if (!client.connect(host_ip, host_port)) {
     Serial.println("connection failed");
     return;
@@ -29,7 +35,7 @@ void setup() {
   while(client.connected() && can_display_arrival()){
     next = client.read();
 
-    if (next == -1) {
+    if (next == -1) { // TODO: Could use client.available() instead of this
       continue; // No data received yet
     }
     

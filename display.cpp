@@ -8,9 +8,15 @@ static Adafruit_7segment numeric = Adafruit_7segment();
 
 void display_init() {
   matrix.begin(0x70);
-  matrix.clear();
   numeric.begin(0x74);
+  display_clear();
+}
+
+void display_clear() {
+  matrix.clear();
   numeric.clear();
+  matrix.writeDisplay();
+  numeric.writeDisplay();
 }
 
 void display_loading(const uint8_t icon[]) {

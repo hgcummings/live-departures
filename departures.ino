@@ -3,8 +3,10 @@
 #include "network.h"
 #include "display.h"
 #include "data.h"
+#include "state.h"
 
 int bus_count = sizeof(buses) / sizeof(buses[0]);
+WiFiClient client;
 
 void setup() {
   Serial.begin(9600);
@@ -13,8 +15,22 @@ void setup() {
   display_init();
   display_loading(loading_icon);
 
-  WiFiClient client = network_client();
+  client = network_client();
+  uint8_t i = state_get();
+  state_set((i + 1) % bus_count);
 
+  show_arrivals(i);
+
+  delay(8000);
+  display_clear();
+  state_set(i);
+  ESP.deepSleep(0);
+}
+
+void loop() {
+}
+
+void show_arrivals(uint8_t i) {
   Serial.print("Connecting to ");
   Serial.print(host_ip);
   Serial.printf(":%d\n", host_port);
@@ -22,22 +38,23 @@ void setup() {
     Serial.println("connection failed");
     return;
   }
-
-  randomSeed(analogRead(0));
-  int i = random(bus_count);
+  
   Serial.printf("Requesting arrivals for bus %d\n", buses[i].number);
   client.write(buses[i].number);
 
   int next;
   int found = 0;
 
+  Serial.print("Awaiting response from server");
+  while(client.connected() && !client.available()) {
+    delay(10);
+    Serial.print(".");
+  }
+  Serial.println("");
+  
   Serial.println("Displaying arrivals");
   while(client.connected() && can_display_arrival()){
     next = client.read();
-
-    if (next == -1) { // TODO: Could use client.available() instead of this
-      continue; // No data received yet
-    }
     
     Serial.printf("- Arrival in %d deciseconds\n", next);
 
@@ -59,5 +76,3 @@ void setup() {
   Serial.println("Done");
 }
 
-void loop() {
-}

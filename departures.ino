@@ -16,7 +16,7 @@ void setup() {
   display_loading(loading_icon);
 
   client = network_client();
-  uint8_t i = state_get();
+  uint8_t i = state_get() % bus_count;
   state_set((i + 1) % bus_count);
 
   show_arrivals(i);

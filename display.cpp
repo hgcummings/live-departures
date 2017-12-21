@@ -5,6 +5,7 @@
 
 static Adafruit_8x8matrix matrix = Adafruit_8x8matrix();
 static Adafruit_7segment numeric = Adafruit_7segment();
+static int VIEWABLE_DIGITS = 3;
 
 void display_init() {
   matrix.begin(0x70);
@@ -53,13 +54,13 @@ void increment_current_digit() {
 }
 
 bool can_display_arrival() {
-  return current_digit <= 4;
+  return current_digit <= VIEWABLE_DIGITS;
 }
 
 void display_arrival(int minutes) {
   int tens = minutes / 10;
   if (tens > 0) {
-    if (current_digit >= 4) {
+    if (current_digit >= VIEWABLE_DIGITS) {
       increment_current_digit();
       return;
     }

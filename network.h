@@ -10,4 +10,4 @@ extern IPAddress subnet_mask;
 extern IPAddress host_ip;
 extern uint16_t host_port;
 
-WiFiClient network_client();
+WiFiClient network_client(void (*spinner)());

@@ -2,13 +2,12 @@
 
 #include "network.h"
 
-WiFiClient network_client() {
+WiFiClient network_client(void (*spinner)()) {
   Serial.printf("Connecting to %s", ssid);
   WiFi.config(local_ip, gateway_ip, subnet_mask);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(10);
-    Serial.print(".");
+    spinner();
   }
  
   Serial.println("");

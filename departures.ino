@@ -8,14 +8,20 @@
 int bus_count = sizeof(buses) / sizeof(buses[0]);
 WiFiClient client;
 
+void spinner() {
+  delay(50);
+  Serial.print(".");
+  display_spinner_animate();
+}
+
 void setup() {
   Serial.begin(9600);
   Serial.println();
   Serial.println();
   display_init();
-  display_loading(loading_icon);
+  display_spinner(loading_icon);
 
-  client = network_client();
+  client = network_client(spinner);
   uint8_t i = state_get() % bus_count;
   state_set((i + 1) % bus_count);
 
@@ -36,6 +42,7 @@ void show_arrivals(uint8_t i) {
   Serial.printf(":%d\n", host_port);
   if (!client.connect(host_ip, host_port)) {
     Serial.println("connection failed");
+    display_error();
     return;
   }
   
@@ -47,13 +54,16 @@ void show_arrivals(uint8_t i) {
 
   Serial.print("Awaiting response from server");
   while(client.connected() && !client.available()) {
-    delay(10);
-    Serial.print(".");
+    spinner();
   }
   Serial.println("");
   
   Serial.println("Displaying arrivals");
   while(client.connected() && can_display_arrival()){
+    if (found == 0) {
+      display_arrivals_begin(buses[i].icon);
+    }
+
     next = client.read();
     
     Serial.printf("- Arrival in %d deciseconds\n", next);
@@ -61,10 +71,6 @@ void show_arrivals(uint8_t i) {
     int minutes = next / 6;
     if (minutes < 3) {
       continue; 
-    }
-
-    if (found == 0) {
-      display_arrivals_begin(buses[i].icon);
     }
 
     found++;
